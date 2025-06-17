@@ -1,20 +1,44 @@
 {
   "name": "ai-friendly-jest-reporter",
   "version": "0.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A Jest coverage reporter with AI-friendly output",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/esm/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "prepare": "npm run build",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch"
   },
-  "keywords": ["jest", "coverage", "reporter", "testing"],
+  "keywords": ["jest", "coverage", "reporter", "testing", "typescript"],
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "jest": "^29.7.0",
     "@types/jest": "^29.5.8",
-    "@types/node": "^20.8.10"
+    "@types/node": "^20.8.10",
+    "typescript": "^5.3.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@jest/reporters": "^29.7.0",
+    "istanbul-lib-coverage": "^3.2.2"
+  },
+  "peerDependencies": {
+    "jest": ">=29.0.0"
+  }
 } 

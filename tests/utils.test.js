@@ -1,4 +1,4 @@
-const { isEven, isOdd, isPrime, fibonacci, reverseString } = require('../utils');
+const { isEven, isOdd, isPrime, fibonacci, reverseString } = require('./utils');
 
 describe('Utility Functions', () => {
   describe('isEven', () => {

@@ -11,13 +11,14 @@ module.exports = {
   // Coverage configuration
   collectCoverage: false, // Will be enabled via --coverage flag
   collectCoverageFrom: [
-    'src/**/*.js',
-    '!src/**/*.test.js',
-    '!src/**/__tests__/**'
+    'tests/**/*.js',
+    '!tests/**/*.test.js',
+    '!tests/**/__tests__/**',
+    '!dist/**/*.js'
   ],
   
   // Custom reporters - our enhanced coverage reporter
   reporters: [
-    ['./ai-friendly-coverage-reporter.js', {}]
+    ['./dist/cjs/index.js', {}]
   ],
 }; 

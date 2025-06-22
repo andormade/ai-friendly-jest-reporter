@@ -20,7 +20,6 @@ npm install --save‑dev jest‑ai‑friendly‑reporter
 You can specify the reporter directly from the command line using the `--reporters` flag:
 
 ```bash
-# Run Jest and use the custom reporter silently
 npx jest --coverage --coverageReporters="json" --reporters="jest-ai-friendly-reporter" --fileName="calculator.js" --functionName="divide"
 ```
 
@@ -39,6 +38,13 @@ I recommended to add an npm script to your `package.json` for easier usage:
 Then you can run it with additional parameters like this:
 ```bash
 npm run test:coverage-ai -- --fileName="calculator.js" --functionName="divide"
+```
+
+For the best experience with AI coding assistants, I recommend adding a custom rule to your agentic IDE (like Cursor) to instruct the agent to use this npm script when it needs to check coverage for specific functions.
+
+Example rule for Cursor (`.cursorrules`):
+```
+When checking test coverage for a specific function, use 'npm run test:coverage-ai -- --fileName=\"$FILE\" --functionName=\"$FUNCTION\"' instead of running Jest directly.
 ```
 
 ## Output

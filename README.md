@@ -1,5 +1,9 @@
 # AI-Friendly Coverage Reporter for Jest
 
+Minimal, function‑scoped coverage reporter that speaks JSON so your LLM agents don’t have to parse ASCII tables and HTML reports.
+
+## Why this exists
+
 I found that agentic IDEs work best when they're asked to do small, granular tasks. However, when I tried asking them to improve the test coverage of specific functions, they couldn't do it confidently. This is because the default Jest coverage reporters output verbose information with a lot of human-friendly formatting, which unnecessarily spams the AI's context window.
 
 ## Solution
@@ -24,7 +28,14 @@ npx jest \
   --functionName="divide"
 ```
 
-Note: The `--coverageReporters="none"` flag is important as it prevents Jest from outputting any additional coverage reports that could confuse the AI.
+Note: The `--coverageReporters="none"` flag is important, otherwise Jest will emit its default reports on top of ours.
+
+## CLI options
+
+| Flag             | Type      | Required  | Default | Description                                                          |
+| ---------------- | --------- | --------- | ------- | -------------------------------------------------------------------- |
+| `--filePath`     | `string`  | Yes       |         | Absolute/relative path of the module containing the target function. |
+| `--functionName` | `string`  | Yes       |         | Name of the function to analyse.                                     |
 
 ## Recommended Setup
 
@@ -44,9 +55,9 @@ npm run test:coverage-ai -- \
   --functionName="divide"
 ```
 
-For the best experience you can add a custom rule to your agentic IDE (like Cursor) to instruct the agent to use this npm script when it needs to check coverage for specific files or functions:
+## Integrating with agentic IDEs
 
-Example rule:
+Add a custom rule so the agent automatically uses the reporter when it needs coverage data:
 ```
 When checking test coverage for a specific function, 
 use 'npm run test:coverage-ai -- --filePath=\"$FILE\" --functionName=\"$FUNCTION\"'

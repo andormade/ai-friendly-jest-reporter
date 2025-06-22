@@ -7,7 +7,7 @@ program with an AI agent this flood of data wastes context and hides the point. 
 
 ## Solution
 
-This reporter trims the noise. It gathers coverage only for the function you care about and writes a short XML report with no colours, no padding, and no decoration. The output is tiny, and very easy for an AI to parse.
+This reporter trims the noise. It gathers coverage only for the function you care about and outputs a concise JSON report that's easy for AI to parse.
 
 ## Install
 
@@ -15,29 +15,43 @@ This reporter trims the noise. It gathers coverage only for the function you car
 npm install --save‑dev jest‑ai‑friendly‑reporter
 ```
 
-## Configure
+## Usage
 
-Add the reporter to jest.config.js:
+You can specify the reporter directly from the command line using the `--reporters` flag:
 
-```javascript
-module.exports = {
-  reporters: [
-    "json",    // keep anything you still need
-    "jest-ai-friendly-reporter"
-  ],
-};
+```bash
+# Run Jest and use the custom reporter silently
+npx jest --coverage --coverageReporters="json" --reporters="jest-ai-friendly-reporter" --fileName="calculator.js" --functionName="divide"
+```
+
+## Recommended Setup
+
+I recommended to add an npm script to your `package.json` for easier usage:
+
+```json
+{
+  "scripts": {
+    "test:coverage-ai": "jest --coverage --coverageReporters=\"json\" --reporters=\"jest-ai-friendly-reporter\""
+  }
+}
+```
+
+Then you can run it with additional parameters like this:
+```bash
+npm run test:coverage-ai -- --fileName="calculator.js" --functionName="divide"
 ```
 
 ## Output
 
-The reporter writes coverage/ai-report.xml
+The reporter outputs a JSON report directly to the console with the following format:
 
-```xml
-<coverage file="src/cart.js" function="calculateTotal" covered="12" total="17" percent="70.6">
-  <missing line="45" />
-  <missing line="48" />
-  <missing line="49" />
-  <missing line="50" />
-  <missing line="54" />
-</coverage>
+```json
+{
+  "results": {
+    "calculator.js": {
+      "status": "uncovered_lines",
+      "uncoveredLines": [45, 48, 49, 50, 54]
+    }
+  }
+}
 ```

@@ -1,6 +1,7 @@
 import { CoverageReporter } from '@jest/reporters';
 import type { Config } from '@jest/types';
 import type { CoverageMap, FileCoverage } from 'istanbul-lib-coverage';
+import yargsParser from 'yargs-parser';
 
 interface CustomFlags {
   functionName: string | null;
@@ -40,37 +41,11 @@ class CustomCoverageReporter extends CoverageReporter {
     this.reporterOptions = reporterOptions || {};
 
     // Parse custom CLI flags
-    this.customFlags = this.parseCustomFlags();
-  }
-
-  private parseCustomFlags(): CustomFlags {
-    const args = process.argv;
-    const flags: CustomFlags = {
-      functionName: null,
-      fileName: null
+    const parsedArgs = yargsParser(process.argv.slice(2));
+    this.customFlags = {
+      functionName: (parsedArgs.functionName as string) || null,
+      fileName: (parsedArgs.fileName as string) || null,
     };
-
-    for (let i = 0; i < args.length; i++) {
-      const arg = args[i];
-
-      // Parse --function-name flag
-      if (arg.startsWith('--function-name=')) {
-        flags.functionName = arg.split('=')[1];
-      } else if (arg === '--function-name' && i + 1 < args.length) {
-        flags.functionName = args[i + 1];
-        i++; // Skip the next argument since we consumed it
-      }
-
-      // Parse --file-name flag
-      if (arg.startsWith('--file-name=')) {
-        flags.fileName = arg.split('=')[1];
-      } else if (arg === '--file-name' && i + 1 < args.length) {
-        flags.fileName = args[i + 1];
-        i++; // Skip the next argument since we consumed it
-      }
-    }
-
-    return flags;
   }
 
   onTestResult(test: any, testResult: any): void {
@@ -81,50 +56,67 @@ class CustomCoverageReporter extends CoverageReporter {
   }
 
   async onRunComplete(testContexts: any, results: any): Promise<void> {
+    const report: { [key: string]: any } = {};
+
     if (this.disabled) {
-      console.log('Coverage collection is disabled');
+      report.summary = 'Coverage collection is disabled';
+      console.log(JSON.stringify(report, null, 2));
       return;
     }
 
     // Call parent to let Jest do its normal coverage processing
     await super.onRunComplete(testContexts, results);
 
-    // Now we have access to the coverage data!
-    console.log('\n🎯 Custom Coverage Reporter');
-    console.log('═══════════════════════════');
-
     // Access the coverage map from the parent class
     const coverageMap = (this as any)._coverageMap as CoverageMap | undefined;
 
     if (!coverageMap || coverageMap.files().length === 0) {
-      console.log('No coverage data available');
+      report.summary = 'No coverage data available';
+      console.log(JSON.stringify(report, null, 2));
       return;
     }
 
-    // Display and optionally save the coverage results
+    // Generate the coverage results and output to console
     try {
       const files = coverageMap.files();
-      const filteredFiles = this.customFlags.fileName 
-        ? files.filter((filePath: string) => filePath.includes(this.customFlags.fileName!))
+      const filteredFiles = this.customFlags.fileName
+        ? files.filter((filePath: string) =>
+            filePath.includes(this.customFlags.fileName!)
+          )
         : files;
 
+      const fileReports: { [key: string]: any } = {};
+
       filteredFiles.forEach((filePath: string) => {
-        const fileCoverage: FileCoverage = coverageMap.fileCoverageFor(filePath);
+        const fileCoverage: FileCoverage =
+          coverageMap.fileCoverageFor(filePath);
         const fnMap: FunctionMap = fileCoverage.fnMap as FunctionMap;
-        
+
         if (!this.customFlags.functionName) {
-          console.log(`Processing file: ${filePath}`);
+          fileReports[filePath] = {
+            status: 'processing',
+          };
           return;
         }
 
-        const targetFunction = Object.values(fnMap).find(fn => fn.name === this.customFlags.functionName);
-        
+        const targetFunction = Object.values(fnMap).find(
+          (fn) => fn.name === this.customFlags.functionName
+        );
+
         if (!targetFunction) {
-          console.log(`Function '${this.customFlags.functionName}' not found in ${filePath}`);
+          fileReports[filePath] = {
+            status: 'function_not_found',
+            functionName: this.customFlags.functionName,
+          };
           return;
         }
 
-        const { loc: { start: { line: start }, end: { line: end } } } = targetFunction;
+        const {
+          loc: {
+            start: { line: start },
+            end: { line: end },
+          },
+        } = targetFunction;
         const lineCoverage = fileCoverage.getLineCoverage();
         const uncoveredLines = Object.entries(lineCoverage)
           .filter(([lineNumber, coverage]) => {
@@ -134,15 +126,25 @@ class CustomCoverageReporter extends CoverageReporter {
           .map(([lineNumber]) => parseInt(lineNumber, 10));
 
         if (uncoveredLines.length > 0) {
-          console.log(`Uncovered lines in ${filePath}: ${uncoveredLines.join(', ')}`);
+          fileReports[filePath] = {
+            status: 'uncovered_lines',
+            uncoveredLines: uncoveredLines,
+          };
         } else {
-          console.log(`All lines in ${filePath} are covered`);
+          fileReports[filePath] = {
+            status: 'all_lines_covered',
+            uncoveredLines: [],
+          };
         }
       });
+      report.results = fileReports;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('❌ Failed to write coverage report:', errorMessage);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      report.error = `Failed to generate coverage report: ${errorMessage}`;
     }
+
+    console.log(JSON.stringify(report, null, 2));
   }
 }
 

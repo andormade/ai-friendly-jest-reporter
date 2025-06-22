@@ -2,10 +2,11 @@ import { CoverageReporter } from '@jest/reporters';
 import type { Config } from '@jest/types';
 import type { CoverageMap, FileCoverage } from 'istanbul-lib-coverage';
 import yargsParser from 'yargs-parser';
+import path from 'path';
 
 interface CustomFlags {
   functionName: string | null;
-  fileName: string | null;
+  filePath: string | null;
 }
 
 interface ReporterOptions {
@@ -30,6 +31,7 @@ class CustomCoverageReporter extends CoverageReporter {
   private disabled: boolean;
   private reporterOptions: ReporterOptions;
   private customFlags: CustomFlags;
+  private projectRoot: string;
 
   constructor(
     globalConfig: Config.GlobalConfig,
@@ -39,13 +41,18 @@ class CustomCoverageReporter extends CoverageReporter {
     super(globalConfig, reporterContext);
     this.disabled = !globalConfig.collectCoverage;
     this.reporterOptions = reporterOptions || {};
+    this.projectRoot = process.cwd();
 
     // Parse custom CLI flags
     const parsedArgs = yargsParser(process.argv.slice(2));
     this.customFlags = {
       functionName: (parsedArgs.functionName as string) || null,
-      fileName: (parsedArgs.fileName as string) || null,
+      filePath: (parsedArgs.filePath as string) || null,
     };
+  }
+
+  private getRelativePath(absolutePath: string): string {
+    return path.relative(this.projectRoot, absolutePath);
   }
 
   onTestResult(test: any, testResult: any): void {
@@ -79,10 +86,10 @@ class CustomCoverageReporter extends CoverageReporter {
     // Generate the coverage results and output to console
     try {
       const files = coverageMap.files();
-      const filteredFiles = this.customFlags.fileName
+      const filteredFiles = this.customFlags.filePath
         ? files.filter((filePath: string) =>
-            filePath.includes(this.customFlags.fileName!)
-          )
+          filePath.endsWith(this.customFlags.filePath!)
+        )
         : files;
 
       const fileReports: { [key: string]: any } = {};
@@ -91,20 +98,14 @@ class CustomCoverageReporter extends CoverageReporter {
         const fileCoverage: FileCoverage =
           coverageMap.fileCoverageFor(filePath);
         const fnMap: FunctionMap = fileCoverage.fnMap as FunctionMap;
-
-        if (!this.customFlags.functionName) {
-          fileReports[filePath] = {
-            status: 'processing',
-          };
-          return;
-        }
+        const relativePath = this.getRelativePath(filePath);
 
         const targetFunction = Object.values(fnMap).find(
           (fn) => fn.name === this.customFlags.functionName
         );
 
         if (!targetFunction) {
-          fileReports[filePath] = {
+          fileReports[relativePath] = {
             status: 'function_not_found',
             functionName: this.customFlags.functionName,
           };
@@ -126,12 +127,12 @@ class CustomCoverageReporter extends CoverageReporter {
           .map(([lineNumber]) => parseInt(lineNumber, 10));
 
         if (uncoveredLines.length > 0) {
-          fileReports[filePath] = {
+          fileReports[relativePath] = {
             status: 'uncovered_lines',
             uncoveredLines: uncoveredLines,
           };
         } else {
-          fileReports[filePath] = {
+          fileReports[relativePath] = {
             status: 'all_lines_covered',
             uncoveredLines: [],
           };

@@ -1,7 +1,5 @@
 # AI-Friendly Coverage Reporter for Jest
 
-## Problem
-
 I found that agentic IDEs work best when they're asked to do small, granular tasks. However, when I tried asking them to improve the test coverage of specific functions, they couldn't do it confidently. This is because the default Jest coverage reporters output verbose information with a lot of human-friendly formatting, which unnecessarily spams the AI's context window.
 
 ## Solution
@@ -22,7 +20,7 @@ npx jest \
   --coverage \
   --coverageReporters="none" \
   --reporters="jest-ai-friendly-reporter" \
-  --fileName="calculator.js" \
+  --filePath="calculator.js" \
   --functionName="divide"
 ```
 
@@ -42,7 +40,7 @@ I recommended to add an npm script to your `package.json` for easier usage:
 Then you can run it with additional parameters like this:
 ```bash
 npm run test:coverage-ai -- \
-  --fileName="calculator.js" \
+  --filePath="calculator.js" \
   --functionName="divide"
 ```
 
@@ -51,7 +49,7 @@ For the best experience you can add a custom rule to your agentic IDE (like Curs
 Example rule:
 ```
 When checking test coverage for a specific function, 
-use 'npm run test:coverage-ai -- --fileName=\"$FILE\" --functionName=\"$FUNCTION\"'
+use 'npm run test:coverage-ai -- --filePath=\"$FILE\" --functionName=\"$FUNCTION\"'
 instead of running Jest directly.
 ```
 

@@ -1,1 +1,2 @@
 - Don't edit the README.md unless explicitly prompted.
+- Run this command to verify the output of the reporter: npm run test:coverage-ai -- --filePath="calculator.js" --functionName="divide"

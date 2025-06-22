@@ -2,6 +2,10 @@
   "name": "jest-ai-friendly-reporter",
   "version": "0.0.0",
   "description": "A Jest coverage reporter with AI-friendly output",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andorthehood/jest-ai-friendly-reporter.git"
+  },
   "type": "module",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -21,12 +25,10 @@
     "prepare": "npm run build",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test:coverage-ai": "jest --coverage --coverageReporters=\"none\" --reporters=\"jest-ai-friendly-reporter\""
   },
   "keywords": ["jest", "coverage", "reporter", "testing", "typescript"],
-  "author": "",
+  "author": "Andor Polgar",
   "license": "MIT",
   "devDependencies": {
     "jest": "^29.7.0",

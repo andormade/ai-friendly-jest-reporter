@@ -1,13 +1,12 @@
-# AI-Friendly Jest Coverage Reporter
+# AI-Friendly Coverage Reporter for Jest
 
 ## Problem
 
-Standard coverage reports are built for people, not for language models. They list every file, every branch, and every line. When you pair 
-program with an AI agent this flood of data wastes context and hides the point. I only want to know whether this function is covered.
+I found that agentic IDEs work best when they're asked to do small, granular tasks. However, when I tried asking them to improve the test coverage of specific functions, they couldn't do it confidently. This is because the default Jest coverage reporters output verbose information with a lot of human-friendly formatting, which unnecessarily spams the AI's context window.
 
 ## Solution
 
-This reporter trims the noise. It gathers coverage only for the function you care about and outputs a concise JSON report that's easy for AI to parse.
+This reporter trims the noise, it gathers coverage only for the function you care about and outputs a concise JSON report that's easy for AI to parse.
 
 ## Install
 
@@ -21,20 +20,21 @@ You can specify the reporter directly from the command line using the `--reporte
 ```bash
 npx jest \
   --coverage \
-  --coverageReporters="json" \
+  --coverageReporters="none" \
   --reporters="jest-ai-friendly-reporter" \
   --fileName="calculator.js" \
   --functionName="divide"
 ```
 
+Note: The `--coverageReporters="none"` flag is important as it prevents Jest from outputting any additional coverage reports that could confuse the AI.
+
 ## Recommended Setup
 
 I recommended to add an npm script to your `package.json` for easier usage:
-
 ```json
 {
   "scripts": {
-    "test:coverage-ai": "jest --coverage --coverageReporters=\"json\" --reporters=\"jest-ai-friendly-reporter\""
+    "test:coverage-ai": "jest --coverage --coverageReporters=\"none\" --reporters=\"jest-ai-friendly-reporter\""
   }
 }
 ```
@@ -46,7 +46,7 @@ npm run test:coverage-ai -- \
   --functionName="divide"
 ```
 
-For the best experience I recommend adding a custom rule to your agentic IDE (like Cursor) to instruct the agent to use this npm script when it needs to check coverage for specific files or functions:
+For the best experience you can add a custom rule to your agentic IDE (like Cursor) to instruct the agent to use this npm script when it needs to check coverage for specific files or functions:
 
 Example rule:
 ```
@@ -58,7 +58,6 @@ instead of running Jest directly.
 ## Output
 
 The reporter outputs a JSON report directly to the console with the following format:
-
 ```json
 {
   "results": {

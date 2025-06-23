@@ -9,10 +9,6 @@ interface CustomFlags {
   filePath: string | null;
 }
 
-interface ReporterOptions {
-  [key: string]: any;
-}
-
 interface FunctionMap {
   [key: string]: {
     name: string;
@@ -28,19 +24,15 @@ interface FunctionMap {
 }
 
 class CustomCoverageReporter extends CoverageReporter {
-  private disabled: boolean;
-  private reporterOptions: ReporterOptions;
   private customFlags: CustomFlags;
   private projectRoot: string;
 
   constructor(
     globalConfig: Config.GlobalConfig,
-    reporterOptions?: ReporterOptions,
+    reporterOptions?: any,
     reporterContext?: any
   ) {
     super(globalConfig, reporterContext);
-    this.disabled = !globalConfig.collectCoverage;
-    this.reporterOptions = reporterOptions || {};
     this.projectRoot = process.cwd();
 
     // Parse custom CLI flags
@@ -56,20 +48,11 @@ class CustomCoverageReporter extends CoverageReporter {
   }
 
   onTestResult(test: any, testResult: any): void {
-    if (this.disabled) {
-      return;
-    }
     super.onTestResult(test, testResult);
   }
 
   async onRunComplete(testContexts: any, results: any): Promise<void> {
     const report: { [key: string]: any } = {};
-
-    if (this.disabled) {
-      report.summary = 'Coverage collection is disabled';
-      console.log(JSON.stringify(report, null, 2));
-      return;
-    }
 
     // Call parent to let Jest do its normal coverage processing
     await super.onRunComplete(testContexts, results);

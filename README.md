@@ -1,9 +1,5 @@
 # AI-Friendly Coverage Reporter for Jest
 
-Minimal, function‑scoped coverage reporter that speaks JSON so your LLM agents don’t have to parse ASCII tables and HTML reports.
-
-## Why this exists
-
 I found that agentic IDEs work best when they're asked to do small, granular tasks. However, when I tried asking them to improve the test coverage of specific functions, they couldn't do it confidently. This is because the default Jest coverage reporters output verbose information with a lot of human-friendly formatting, which unnecessarily spams the AI's context window.
 
 ## Solution
